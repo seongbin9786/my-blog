@@ -1,76 +1,89 @@
 ---
 name: vercel-composition-patterns
-description: Next.js 애플리케이션을 위한 Vercel 권장 컴포지션 패턴
-triggers:
-  - composition
-  - component
-  - pattern
-  - vercel-pattern
-  - client-server
-argument-hint: '[component-type]'
+description:
+  React composition patterns that scale. Use when refactoring components with
+  boolean prop proliferation, building flexible component libraries, or
+  designing reusable APIs. Triggers on tasks involving compound components,
+  render props, context providers, or component architecture. Includes React 19
+  API changes.
+license: MIT
+metadata:
+  author: vercel
+  version: '1.0.0'
 ---
 
-# Vercel Composition Patterns
+# React Composition Patterns
 
-## 목적
+Composition patterns for building flexible, maintainable React components. Avoid
+boolean prop proliferation by using compound components, lifting state, and
+composing internals. These patterns make codebases easier for both humans and AI
+agents to work with as they scale.
 
-Vercel/Next.js 생태계에서 권장하는 컴포넌트 구성 패턴으로 최적의 성능 달성
+## When to Apply
 
-## 활성화 시점
+Reference these guidelines when:
 
-- 컴포넌트 구조 설계
-- 서버/클라이언트 컴포넌트 분리 필요
-- 데이터 페칭 패턴 결정
+- Refactoring components with many boolean props
+- Building reusable component libraries
+- Designing flexible component APIs
+- Reviewing component architecture
+- Working with compound components or context providers
 
-## 핵심 패턴
+## Rule Categories by Priority
 
-### 1. Server/Client 컴포넌트 분리
+| Priority | Category                | Impact | Prefix          |
+| -------- | ----------------------- | ------ | --------------- |
+| 1        | Component Architecture  | HIGH   | `architecture-` |
+| 2        | State Management        | MEDIUM | `state-`        |
+| 3        | Implementation Patterns | MEDIUM | `patterns-`     |
+| 4        | React 19 APIs           | MEDIUM | `react19-`      |
 
-```typescript
-// ServerWrapper.tsx - 서버에서 데이터 페칭
-export const ServerWrapper = async () => {
-  const data = await fetchData();
+## Quick Reference
 
-  return (
-    <ClientChild
-      data={data}
-      onAction={handleServerAction}
-    />
-  );
-};
+### 1. Component Architecture (HIGH)
 
-// ClientChild.tsx - 클라이언트 상호작용
-"use client";
+- `architecture-avoid-boolean-props` - Don't add boolean props to customize
+  behavior; use composition
+- `architecture-compound-components` - Structure complex components with shared
+  context
 
-export const ClientChild = ({ data, onAction }) => {
-  const [state, setState] = useState(null);
+### 2. State Management (MEDIUM)
 
-  return (
-    <div onClick={() => onAction(state)}>
-      {/* 클라이언트 로직 */}
-    </div>
-  );
-};
+- `state-decouple-implementation` - Provider is the only place that knows how
+  state is managed
+- `state-context-interface` - Define generic interface with state, actions, meta
+  for dependency injection
+- `state-lift-state` - Move state into provider components for sibling access
+
+### 3. Implementation Patterns (MEDIUM)
+
+- `patterns-explicit-variants` - Create explicit variant components instead of
+  boolean modes
+- `patterns-children-over-render-props` - Use children for composition instead
+  of renderX props
+
+### 4. React 19 APIs (MEDIUM)
+
+> **⚠️ React 19+ only.** Skip this section if using React 18 or earlier.
+
+- `react19-no-forwardref` - Don't use `forwardRef`; use `use()` instead of `useContext()`
+
+## How to Use
+
+Read individual rule files for detailed explanations and code examples:
+
+```
+rules/architecture-avoid-boolean-props.md
+rules/state-context-interface.md
 ```
 
-### 2. 렌더링 최적화
+Each rule file contains:
 
-- 무거운 로직: 서버 컴포넌트
-- 상호작용: 클라이언트 컴포넌트
-- 공유 상태: 최상위 부모에서 관리
+- Brief explanation of why it matters
+- Incorrect code example with explanation
+- Correct code example with explanation
+- Additional context and references
 
-### 3. 데이터 흐름
+## Full Compiled Document
 
-```
-Server Component (데이터 페칭)
-  ↓
-Props로 데이터 전달
-  ↓
-Client Component (상호작용)
-```
-
-## 주의사항
-
-- 클라이언트 컴포넌트 남용 금지 (번들 크기 증가)
-- 서버 액션으로 폼 제출 처리
-- 필요할 때만 클라이언트 컴포넌트 사용
+For the complete guide with all rules expanded: `AGENTS.md`

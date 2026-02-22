@@ -1,182 +1,101 @@
 ---
 name: webapp-testing
-description: 웹 애플리케이션 테스팅 전략 및 패턴
-triggers:
-  - test
-  - testing
-  - unit-test
-  - integration-test
-  - e2e
-  - vitest
-argument-hint: '[test-type]'
+description: Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
+license: Complete terms in LICENSE.txt
 ---
 
 # Web Application Testing
 
-## 목적
+To test local web applications, write native Python Playwright scripts.
 
-효과적인 웹 애플리케이션 테스팅으로 버그 감소 및 코드 품질 향상
+**Helper Scripts Available**:
 
-## 활성화 시점
+- `scripts/with_server.py` - Manages server lifecycle (supports multiple servers)
 
-- 테스트 작성 및 구조화
-- 테스팅 전략 수립
-- CI/CD 파이프라인 구축
+**Always run scripts with `--help` first** to see usage. DO NOT read the source until you try running the script first and find that a customized solution is abslutely necessary. These scripts can be very large and thus pollute your context window. They exist to be called directly as black-box scripts rather than ingested into your context window.
 
-## 테스팅 피라미드
+## Decision Tree: Choosing Your Approach
 
 ```
-      E2E 테스트 (5%)
-    통합 테스트 (15%)
-  단위 테스트 (80%)
+User task → Is it static HTML?
+    ├─ Yes → Read HTML file directly to identify selectors
+    │         ├─ Success → Write Playwright script using selectors
+    │         └─ Fails/Incomplete → Treat as dynamic (below)
+    │
+    └─ No (dynamic webapp) → Is the server already running?
+        ├─ No → Run: python scripts/with_server.py --help
+        │        Then use the helper + write simplified Playwright script
+        │
+        └─ Yes → Reconnaissance-then-action:
+            1. Navigate and wait for networkidle
+            2. Take screenshot or inspect DOM
+            3. Identify selectors from rendered state
+            4. Execute actions with discovered selectors
 ```
 
-## 단위 테스트 (Unit Test)
+## Example: Using with_server.py
 
-### React 컴포넌트 테스트
+To start a server, run `--help` first, then use the helper:
 
-```typescript
-import { render, screen } from "@testing-library/react";
-import { Button } from "@/components/Button";
+**Single server:**
 
-describe("Button", () => {
-  it("클릭 시 콜백 함수 호출", () => {
-    const handleClick = vi.fn();
-
-    render(<Button onClick={handleClick}>클릭</Button>);
-    screen.getByRole("button").click();
-
-    expect(handleClick).toHaveBeenCalled();
-  });
-
-  it("disabled 상태에서 클릭 불가", () => {
-    const handleClick = vi.fn();
-
-    render(<Button disabled onClick={handleClick}>클릭</Button>);
-    screen.getByRole("button").click();
-
-    expect(handleClick).not.toHaveBeenCalled();
-  });
-});
+```bash
+python scripts/with_server.py --server "npm run dev" --port 5173 -- python your_automation.py
 ```
 
-### 유틸리티 함수 테스트
+**Multiple servers (e.g., backend + frontend):**
 
-```typescript
-describe('formatDate', () => {
-  it('날짜를 올바른 형식으로 변환', () => {
-    const result = formatDate(new Date('2026-02-22'));
-    expect(result).toBe('2026년 2월 22일');
-  });
-
-  it('null 입력 처리', () => {
-    expect(formatDate(null)).toBeNull();
-  });
-});
+```bash
+python scripts/with_server.py \
+  --server "cd backend && python server.py" --port 3000 \
+  --server "cd frontend && npm run dev" --port 5173 \
+  -- python your_automation.py
 ```
 
-## 통합 테스트 (Integration Test)
+To create an automation script, include only Playwright logic (servers are managed automatically):
 
-### API 모킹
+```python
+from playwright.sync_api import sync_playwright
 
-```typescript
-import { http, HttpResponse, server } from "@/test/mocks";
-
-describe("UserProfile", () => {
-  beforeAll(() => server.listen());
-  afterEach(() => server.resetHandlers());
-  afterAll(() => server.close());
-
-  it("사용자 정보 로드 및 표시", async () => {
-    server.use(
-      http.get("/api/users/1", () =>
-        HttpResponse.json({ id: 1, name: "John" })
-      )
-    );
-
-    render(<UserProfile userId={1} />);
-
-    const name = await screen.findByText("John");
-    expect(name).toBeInTheDocument();
-  });
-});
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True) # Always launch chromium in headless mode
+    page = browser.new_page()
+    page.goto('http://localhost:5173') # Server already running and ready
+    page.wait_for_load_state('networkidle') # CRITICAL: Wait for JS to execute
+    # ... your automation logic
+    browser.close()
 ```
 
-## E2E 테스트 (End-to-End)
+## Reconnaissance-Then-Action Pattern
 
-### Playwright 예제
+1. **Inspect rendered DOM**:
 
-```typescript
-import { expect, test } from '@playwright/test';
+   ```python
+   page.screenshot(path='/tmp/inspect.png', full_page=True)
+   content = page.content()
+   page.locator('button').all()
+   ```
 
-test('사용자가 상품을 장바구니에 추가할 수 있다', async ({ page }) => {
-  await page.goto('http://localhost:3000');
+2. **Identify selectors** from inspection results
 
-  // 상품 선택
-  await page.getByRole('link', { name: '상품1' }).click();
+3. **Execute actions** using discovered selectors
 
-  // 장바구니 추가 버튼 클릭
-  await page.getByRole('button', { name: '장바구니 추가' }).click();
+## Common Pitfall
 
-  // 확인
-  await expect(page.getByText('장바구니에 추가됨')).toBeVisible();
-});
-```
+❌ **Don't** inspect the DOM before waiting for `networkidle` on dynamic apps
+✅ **Do** wait for `page.wait_for_load_state('networkidle')` before inspection
 
-## 테스팅 베스트 프랙티스
+## Best Practices
 
-### 1. 테스트 명명
+- **Use bundled scripts as black boxes** - To accomplish a task, consider whether one of the scripts available in `scripts/` can help. These scripts handle common, complex workflows reliably without cluttering the context window. Use `--help` to see usage, then invoke directly.
+- Use `sync_playwright()` for synchronous scripts
+- Always close the browser when done
+- Use descriptive selectors: `text=`, `role=`, CSS selectors, or IDs
+- Add appropriate waits: `page.wait_for_selector()` or `page.wait_for_timeout()`
 
-```typescript
-// ❌ 불명확
-it('works', () => {});
+## Reference Files
 
-// ✅ 명확
-it('버튼 클릭 시 모달이 열린다', () => {});
-```
-
-### 2. AAA 패턴 (Arrange-Act-Assert)
-
-```typescript
-it('상품 가격 계산', () => {
-  // Arrange: 테스트 데이터 준비
-  const product = { price: 10000, quantity: 2 };
-
-  // Act: 기능 실행
-  const total = calculateTotal(product);
-
-  // Assert: 결과 검증
-  expect(total).toBe(20000);
-});
-```
-
-### 3. 사용자 관점 테스트
-
-```typescript
-// ❌ 구현 세부사항에 의존
-expect(component.state.isOpen).toBe(true);
-
-// ✅ 사용자가 보는 결과
-expect(screen.getByRole('dialog')).toBeVisible();
-```
-
-## 테스트 커버리지
-
-- **명령문(Statement)**: 80% 이상
-- **분기(Branch)**: 70% 이상
-- **함수(Function)**: 80% 이상
-- **라인(Line)**: 80% 이상
-
-## 주의사항
-
-- 과도한 테스트 금지 (ROI 고려)
-- 테스트도 코드 - 유지보수성 중요
-- 플레이키(flaky) 테스트 제거
-- CI/CD에서 테스트 반드시 실행
-
-## 도구
-
-- **단위 테스트**: Vitest, Jest
-- **UI 테스트**: Testing Library, Vitest
-- **E2E 테스트**: Playwright, Cypress
-- **성능 테스트**: Lighthouse, Web Vitals
+- **examples/** - Examples showing common patterns:
+  - `element_discovery.py` - Discovering buttons, links, and inputs on a page
+  - `static_html_automation.py` - Using file:// URLs for local HTML
+  - `console_logging.py` - Capturing console logs during automation

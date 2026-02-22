@@ -1,249 +1,171 @@
 ---
 name: next-best-practices
-description: Next.js 개발을 위한 Vercel 권장 베스트 프랙티스 및 최적화
-triggers:
-  - next-best-practices
-  - nextjs
-  - next
-  - best-practice
-  - optimization
-  - vercel
-argument-hint: '[feature-area]'
+description: Next.js best practices - file conventions, RSC boundaries, data patterns, async APIs, metadata, error handling, route handlers, image/font optimization, bundling
+user-invocable: false
 ---
 
 # Next.js Best Practices
 
-## 목적
+Apply these rules when writing or reviewing Next.js code.
 
-Next.js 프로젝트에서 성능, 보안, 유지보수성을 최적화하는 공식 권장 방식 적용
+## File Conventions
 
-## 활성화 시점
+See [file-conventions.md](./file-conventions.md) for:
 
-- Next.js 프로젝트 개발
-- 성능 최적화 필요
-- 프로젝트 구조 설계
-- 기능 구현
+- Project structure and special files
+- Route segments (dynamic, catch-all, groups)
+- Parallel and intercepting routes
+- Middleware rename in v16 (middleware → proxy)
 
-## 핵심 원칙
+## RSC Boundaries
 
-### 1. 서버/클라이언트 컴포넌트 분리
+Detect invalid React Server Component patterns.
 
-#### 서버 컴포넌트 (기본값)
+See [rsc-boundaries.md](./rsc-boundaries.md) for:
 
-```typescript
-// app/users/page.tsx
-export default async function UsersPage() {
-  // 서버에서만 실행
-  const users = await db.users.findAll();
+- Async client component detection (invalid)
+- Non-serializable props detection
+- Server Action exceptions
 
-  return (
-    <div>
-      {users.map(user => (
-        <ClientUserCard key={user.id} user={user} />
-      ))}
-    </div>
-  );
-}
+## Async Patterns
 
-// ClientUserCard.tsx
-'use client'; // 명시적 클라이언트 마킹
+Next.js 15+ async API changes.
 
-import { useState } from 'react';
+See [async-patterns.md](./async-patterns.md) for:
 
-export function ClientUserCard({ user }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  // 클라이언트 상호작용 로직
-}
-```
+- Async `params` and `searchParams`
+- Async `cookies()` and `headers()`
+- Migration codemod
 
-**장점:**
+## Runtime Selection
 
-- 번들 크기 감소
-- 보안 (API 키 서버에서만)
-- 데이터 페칭 최적화
+See [runtime-selection.md](./runtime-selection.md) for:
 
-#### 클라이언트 컴포넌트
+- Default to Node.js runtime
+- When Edge runtime is appropriate
 
-```typescript
-'use client';
+## Directives
 
-// useState, useEffect, event listeners 필요시만 사용
-export function InteractiveComponent() {
-  return <button onClick={...}>Click me</button>;
-}
-```
+See [directives.md](./directives.md) for:
 
-**원칙:** 클라이언트 컴포넌트 최소화
+- `'use client'`, `'use server'` (React)
+- `'use cache'` (Next.js)
 
-### 2. 프로젝트 구조
+## Functions
 
-```
-app/
-├── (auth)/
-│   ├── login/
-│   │   └── page.tsx
-│   └── signup/
-│       └── page.tsx
-├── (dashboard)/
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── users/
-│       └── page.tsx
-├── api/
-│   ├── auth/
-│   │   └── [...nextauth].ts
-│   └── users/
-│       └── route.ts
-├── components/
-│   ├── navigation.tsx
-│   └── footer.tsx
-├── layout.tsx
-└── page.tsx
-```
+See [functions.md](./functions.md) for:
 
-### 3. 데이터 페칭 패턴
+- Navigation hooks: `useRouter`, `usePathname`, `useSearchParams`, `useParams`
+- Server functions: `cookies`, `headers`, `draftMode`, `after`
+- Generate functions: `generateStaticParams`, `generateMetadata`
 
-#### 서버에서 페칭 (권장)
+## Error Handling
 
-```typescript
-// app/products/page.tsx
-async function getProducts() {
-  const res = await fetch('https://api.example.com/products', {
-    next: { revalidate: 60 } // ISR: 60초마다 재검증
-  });
+See [error-handling.md](./error-handling.md) for:
 
-  if (!res.ok) throw new Error('Failed to fetch');
-  return res.json();
-}
+- `error.tsx`, `global-error.tsx`, `not-found.tsx`
+- `redirect`, `permanentRedirect`, `notFound`
+- `forbidden`, `unauthorized` (auth errors)
+- `unstable_rethrow` for catch blocks
 
-export default async function ProductsPage() {
-  const products = await getProducts();
-  return <ProductList products={products} />;
-}
-```
+## Data Patterns
 
-#### 클라이언트에서 페칭 (필요시)
+See [data-patterns.md](./data-patterns.md) for:
 
-```typescript
-'use client';
+- Server Components vs Server Actions vs Route Handlers
+- Avoiding data waterfalls (`Promise.all`, Suspense, preload)
+- Client component data fetching
 
-import { useEffect, useState } from 'react';
+## Route Handlers
 
-export function ProductSearch() {
-  const [results, setResults] = useState([]);
+See [route-handlers.md](./route-handlers.md) for:
 
-  useEffect(() => {
-    fetch('/api/search?q=...')
-      .then(r => r.json())
-      .then(setResults);
-  }, []);
+- `route.ts` basics
+- GET handler conflicts with `page.tsx`
+- Environment behavior (no React DOM)
+- When to use vs Server Actions
 
-  return <ul>{results.map(...)}</ul>;
-}
-```
+## Metadata & OG Images
 
-### 4. 라우트 핸들러 (Route Handlers)
+See [metadata.md](./metadata.md) for:
 
-```typescript
-// app/api/users/route.ts
-export async function GET(request: Request) {
-  const users = await db.users.findAll();
-  return Response.json(users);
-}
+- Static and dynamic metadata
+- `generateMetadata` function
+- OG image generation with `next/og`
+- File-based metadata conventions
 
-export async function POST(request: Request) {
-  const data = await request.json();
-  const user = await db.users.create(data);
-  return Response.json(user, { status: 201 });
-}
-```
+## Image Optimization
 
-### 5. 이미지 최적화
+See [image.md](./image.md) for:
 
-```typescript
-import Image from 'next/image';
+- Always use `next/image` over `<img>`
+- Remote images configuration
+- Responsive `sizes` attribute
+- Blur placeholders
+- Priority loading for LCP
 
-export function ProductCard({ product }) {
-  return (
-    <Image
-      src={product.image}
-      alt={product.name}
-      width={300}
-      height={300}
-      priority={false}
-      sizes="(max-width: 640px) 100vw,
-             (max-width: 1024px) 50vw,
-             33vw"
-      quality={75}
-    />
-  );
-}
-```
+## Font Optimization
 
-### 6. 폰트 최적화
+See [font.md](./font.md) for:
 
-```typescript
-// app/layout.tsx
-import { Inter, Garamond } from 'next/font/google';
+- `next/font` setup
+- Google Fonts, local fonts
+- Tailwind CSS integration
+- Preloading subsets
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap', // FOUT 방지
-});
+## Bundling
 
-const garamond = Garamond({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-});
+See [bundling.md](./bundling.md) for:
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="ko" className={inter.className}>
-      <body>{children}</body>
-    </html>
-  );
-}
-```
+- Server-incompatible packages
+- CSS imports (not link tags)
+- Polyfills (already included)
+- ESM/CommonJS issues
+- Bundle analysis
 
-## 성능 메트릭
+## Scripts
 
-### Core Web Vitals
+See [scripts.md](./scripts.md) for:
 
-- **LCP**: 2.5초 이하 (이미지, 폰트 최적화)
-- **FID**: 100ms 이하 (JS 최소화)
-- **CLS**: 0.1 이하 (레이아웃 안정성)
+- `next/script` vs native script tags
+- Inline scripts need `id`
+- Loading strategies
+- Google Analytics with `@next/third-parties`
 
-### 최적화 항목 (19개 주제)
+## Hydration Errors
 
-1. **Core Concepts**: App Router, Pages Router
-2. **Project Structure**: 파일 구성, 명명 규칙
-3. **Server/Client Components**: 분리 전략
-4. **use client / use server**: 지시문 활용
-5. **Data & APIs**: 페칭 전략
-6. **Data Fetching**: fetch, ORM, 캐싱
-7. **Data Mutation**: Server Actions, API Routes
-8. **Route Handlers**: GET, POST, PUT, DELETE
-9. **Async APIs**: fetch, streaming
-10. **Next.js 15+ Async**: 새로운 비동기 패턴
-11. **Image Optimization**: next/image 활용
-12. **Font Optimization**: 폰트 로딩
-13. **CSS-in-JS**: Tailwind, Styled Components
-14. **SEO**: Meta, Open Graph, Sitemap
-15. **Testing**: Unit, Integration, E2E
-16. **Deployment**: Vercel, Self-hosted
-17. **Security**: CSRF, XSS, SQL Injection 방지
-18. **Monitoring**: Analytics, Error tracking
-19. **Performance**: Lighthouse, Web Vitals
+See [hydration-error.md](./hydration-error.md) for:
 
-## 주의사항
+- Common causes (browser APIs, dates, invalid HTML)
+- Debugging with error overlay
+- Fixes for each cause
 
-- ✅ 서버 컴포넌트를 기본으로 선택
-- ✅ 데이터는 가능한 서버에서 페칭
-- ✅ `next/image` 및 `next/font` 활용
-- ✅ Route Groups으로 구조 조직
-- ✅ Error boundary와 Loading 상태 제공
+## Suspense Boundaries
 
-## 참고
+See [suspense-boundaries.md](./suspense-boundaries.md) for:
 
-- [Next.js Official Docs](https://nextjs.org)
-- [Vercel Performance Guide](https://vercel.com/docs)
+- CSR bailout with `useSearchParams` and `usePathname`
+- Which hooks require Suspense boundaries
+
+## Parallel & Intercepting Routes
+
+See [parallel-routes.md](./parallel-routes.md) for:
+
+- Modal patterns with `@slot` and `(.)` interceptors
+- `default.tsx` for fallbacks
+- Closing modals correctly with `router.back()`
+
+## Self-Hosting
+
+See [self-hosting.md](./self-hosting.md) for:
+
+- `output: 'standalone'` for Docker
+- Cache handlers for multi-instance ISR
+- What works vs needs extra setup
+
+## Debug Tricks
+
+See [debug-tricks.md](./debug-tricks.md) for:
+
+- MCP endpoint for AI-assisted debugging
+- Rebuild specific routes with `--debug-build-paths`

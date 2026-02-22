@@ -1,90 +1,138 @@
 ---
 name: vercel-react-best-practices
-description: Vercel 권장 React 베스트 프랙티스 및 최적화 팁
-triggers:
-  - react
-  - best-practice
-  - optimization
-  - performance
-  - vercel
-argument-hint: '[optimization-type]'
+description: React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.
+license: MIT
+metadata:
+  author: vercel
+  version: '1.0.0'
 ---
 
 # Vercel React Best Practices
 
-## 목적
+Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 57 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
 
-Vercel 권장 방식으로 React 애플리케이션의 성능과 유지보수성 향상
+## When to Apply
 
-## 활성화 시점
+Reference these guidelines when:
 
-- React 컴포넌트 작성
-- 성능 최적화 필요
-- Next.js 프로젝트 개발
+- Writing new React components or Next.js pages
+- Implementing data fetching (client or server-side)
+- Reviewing code for performance issues
+- Refactoring existing React/Next.js code
+- Optimizing bundle size or load times
 
-## 핵심 베스트 프랙티스
+## Rule Categories by Priority
 
-### 1. 이미지 최적화
+| Priority | Category                  | Impact      | Prefix       |
+| -------- | ------------------------- | ----------- | ------------ |
+| 1        | Eliminating Waterfalls    | CRITICAL    | `async-`     |
+| 2        | Bundle Size Optimization  | CRITICAL    | `bundle-`    |
+| 3        | Server-Side Performance   | HIGH        | `server-`    |
+| 4        | Client-Side Data Fetching | MEDIUM-HIGH | `client-`    |
+| 5        | Re-render Optimization    | MEDIUM      | `rerender-`  |
+| 6        | Rendering Performance     | MEDIUM      | `rendering-` |
+| 7        | JavaScript Performance    | LOW-MEDIUM  | `js-`        |
+| 8        | Advanced Patterns         | LOW         | `advanced-`  |
 
-```typescript
-import Image from "next/image";
+## Quick Reference
 
-// ❌ 피하기
-<img src="/image.png" alt="description" />
+### 1. Eliminating Waterfalls (CRITICAL)
 
-// ✅ 권장
-<Image
-  src="/image.png"
-  alt="description"
-  width={800}
-  height={600}
-  priority={false}
-/>
+- `async-defer-await` - Move await into branches where actually used
+- `async-parallel` - Use Promise.all() for independent operations
+- `async-dependencies` - Use better-all for partial dependencies
+- `async-api-routes` - Start promises early, await late in API routes
+- `async-suspense-boundaries` - Use Suspense to stream content
+
+### 2. Bundle Size Optimization (CRITICAL)
+
+- `bundle-barrel-imports` - Import directly, avoid barrel files
+- `bundle-dynamic-imports` - Use next/dynamic for heavy components
+- `bundle-defer-third-party` - Load analytics/logging after hydration
+- `bundle-conditional` - Load modules only when feature is activated
+- `bundle-preload` - Preload on hover/focus for perceived speed
+
+### 3. Server-Side Performance (HIGH)
+
+- `server-auth-actions` - Authenticate server actions like API routes
+- `server-cache-react` - Use React.cache() for per-request deduplication
+- `server-cache-lru` - Use LRU cache for cross-request caching
+- `server-dedup-props` - Avoid duplicate serialization in RSC props
+- `server-serialization` - Minimize data passed to client components
+- `server-parallel-fetching` - Restructure components to parallelize fetches
+- `server-after-nonblocking` - Use after() for non-blocking operations
+
+### 4. Client-Side Data Fetching (MEDIUM-HIGH)
+
+- `client-swr-dedup` - Use SWR for automatic request deduplication
+- `client-event-listeners` - Deduplicate global event listeners
+- `client-passive-event-listeners` - Use passive listeners for scroll
+- `client-localstorage-schema` - Version and minimize localStorage data
+
+### 5. Re-render Optimization (MEDIUM)
+
+- `rerender-defer-reads` - Don't subscribe to state only used in callbacks
+- `rerender-memo` - Extract expensive work into memoized components
+- `rerender-memo-with-default-value` - Hoist default non-primitive props
+- `rerender-dependencies` - Use primitive dependencies in effects
+- `rerender-derived-state` - Subscribe to derived booleans, not raw values
+- `rerender-derived-state-no-effect` - Derive state during render, not effects
+- `rerender-functional-setstate` - Use functional setState for stable callbacks
+- `rerender-lazy-state-init` - Pass function to useState for expensive values
+- `rerender-simple-expression-in-memo` - Avoid memo for simple primitives
+- `rerender-move-effect-to-event` - Put interaction logic in event handlers
+- `rerender-transitions` - Use startTransition for non-urgent updates
+- `rerender-use-ref-transient-values` - Use refs for transient frequent values
+
+### 6. Rendering Performance (MEDIUM)
+
+- `rendering-animate-svg-wrapper` - Animate div wrapper, not SVG element
+- `rendering-content-visibility` - Use content-visibility for long lists
+- `rendering-hoist-jsx` - Extract static JSX outside components
+- `rendering-svg-precision` - Reduce SVG coordinate precision
+- `rendering-hydration-no-flicker` - Use inline script for client-only data
+- `rendering-hydration-suppress-warning` - Suppress expected mismatches
+- `rendering-activity` - Use Activity component for show/hide
+- `rendering-conditional-render` - Use ternary, not && for conditionals
+- `rendering-usetransition-loading` - Prefer useTransition for loading state
+
+### 7. JavaScript Performance (LOW-MEDIUM)
+
+- `js-batch-dom-css` - Group CSS changes via classes or cssText
+- `js-index-maps` - Build Map for repeated lookups
+- `js-cache-property-access` - Cache object properties in loops
+- `js-cache-function-results` - Cache function results in module-level Map
+- `js-cache-storage` - Cache localStorage/sessionStorage reads
+- `js-combine-iterations` - Combine multiple filter/map into one loop
+- `js-length-check-first` - Check array length before expensive comparison
+- `js-early-exit` - Return early from functions
+- `js-hoist-regexp` - Hoist RegExp creation outside loops
+- `js-min-max-loop` - Use loop for min/max instead of sort
+- `js-set-map-lookups` - Use Set/Map for O(1) lookups
+- `js-tosorted-immutable` - Use toSorted() for immutability
+
+### 8. Advanced Patterns (LOW)
+
+- `advanced-event-handler-refs` - Store event handlers in refs
+- `advanced-init-once` - Initialize app once per app load
+- `advanced-use-latest` - useLatest for stable callback refs
+
+## How to Use
+
+Read individual rule files for detailed explanations and code examples:
+
+```
+rules/async-parallel.md
+rules/bundle-barrel-imports.md
 ```
 
-### 2. 동적 임포트
+Each rule file contains:
 
-```typescript
-import dynamic from "next/dynamic";
+- Brief explanation of why it matters
+- Incorrect code example with explanation
+- Correct code example with explanation
+- Additional context and references
 
-// 대용량 컴포넌트 분할 로딩
-const HeavyComponent = dynamic(
-  () => import("@/components/HeavyComponent"),
-  { loading: () => <p>로딩 중...</p> }
-);
-```
+## Full Compiled Document
 
-### 3. 메모이제이션
-
-```typescript
-import { memo } from "react";
-
-// 필요할 때만 사용
-export const MemoizedComponent = memo(({ data }) => (
-  <div>{data}</div>
-), (prev, next) => prev.data === next.data);
-```
-
-### 4. 상태 관리
-
-- 전역 상태: Context API 또는 상태 라이브러리
-- 로컬 상태: useState 사용
-- 서버 상태: React Query/SWR 활용
-
-### 5. 렌더링 최적화
-
-- 불필요한 리렌더링 방지
-- 컴포넌트 분할로 스코프 최소화
-- useCallback, useMemo 신중하게 사용
-
-## 성능 메트릭
-
-- **LCP (Largest Contentful Paint)**: 2.5초 이하
-- **FID (First Input Delay)**: 100ms 이하
-- **CLS (Cumulative Layout Shift)**: 0.1 이하
-
-## 주의사항
-
-- 과도한 최적화 금지
-- 측정 후 최적화 (측정 없는 최적화는 악)
-- 사용자 경험 우선
+For the complete guide with all rules expanded: `AGENTS.md`

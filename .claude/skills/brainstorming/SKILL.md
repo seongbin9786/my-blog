@@ -1,141 +1,101 @@
 ---
 name: brainstorming
-description: 아이디어를 검증된 디자인으로 변환하기 전 구조화된 질문 프로세스
-triggers:
-  - brainstorm
-  - brainstorming
-  - idea
-  - design
-  - clarify
-argument-hint: '[project-idea]'
+description: 'You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.'
 ---
 
-# Brainstorming
+# Brainstorming Ideas Into Designs
 
-## 목적
+## Overview
 
-구현 작업을 시작하기 전에 아이디어를 명확히 정의하고 디자인을 검증하는 구조화된 사고 과정
+Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
 
-## 활성화 시점
+Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
 
-- 사용자가 아이디어를 제시할 때
-- 프로젝트 초기 계획 단계
-- 요구사항 명확화 필요
-- 구현 전 설계 검증 필요
+<HARD-GATE>
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+</HARD-GATE>
 
-## 핵심 제약
+## Anti-Pattern: "This Is Too Simple To Need A Design"
 
-**절대 규칙**: 디자인을 제시하고 사용자의 승인을 받을 때까지 어떤 구현 작업도 하지 않음
+Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
 
-- 코드 작성 금지
-- 프로젝트 스캐폴딩 금지
-- 어떤 구현 조치도 취하지 않기
+## Checklist
 
-## 프로세스
+You MUST create a task for each of these items and complete them in order:
 
-### 1단계: 컨텍스트 탐색
+1. **Explore project context** — check files, docs, recent commits
+2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+3. **Propose 2-3 approaches** — with trade-offs and your recommendation
+4. **Present design** — in sections scaled to their complexity, get user approval after each section
+5. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md` and commit
+6. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
-```
-- 기존 파일 검토
-- 프로젝트 상태 확인
-- 기존 아키텍처 파악
-```
+## Process Flow
 
-### 2단계: 명확화 질문
+```dot
+digraph brainstorming {
+    "Explore project context" [shape=box];
+    "Ask clarifying questions" [shape=box];
+    "Propose 2-3 approaches" [shape=box];
+    "Present design sections" [shape=box];
+    "User approves design?" [shape=diamond];
+    "Write design doc" [shape=box];
+    "Invoke writing-plans skill" [shape=doublecircle];
 
-**중요한 원칙:**
-
-- 한 번에 하나의 질문만 (한 번에 여러 개 금지)
-- 다중선택 질문 선호 (개방형 질문 최소화)
-- 불필요한 기능 ruthlessly 제거
-- 명확할 때까지 계속 질문
-
-```
-예시:
-Q: "이 기능의 주요 목적이 무엇인가요?"
-- A: 사용자 인증
-- B: 데이터 관리
-- C: 분석
-
-Q: "얼마나 복잡한가요?"
-- A: 간단함
-- B: 중간
-- C: 복잡함
+    "Explore project context" -> "Ask clarifying questions";
+    "Ask clarifying questions" -> "Propose 2-3 approaches";
+    "Propose 2-3 approaches" -> "Present design sections";
+    "Present design sections" -> "User approves design?";
+    "User approves design?" -> "Present design sections" [label="no, revise"];
+    "User approves design?" -> "Write design doc" [label="yes"];
+    "Write design doc" -> "Invoke writing-plans skill";
+}
 ```
 
-### 3단계: 대안 제시
+**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
 
-2-3가지 접근 방식 제시 (장단점 포함)
+## The Process
 
-```
-**접근 1: Client-side 렌더링**
-장점: 빠른 상호작용, 단순한 배포
-단점: 초기 로딩 느림, SEO 약함
+**Understanding the idea:**
 
-**접근 2: Server-side 렌더링**
-장점: SEO 우수, 보안, 초기 로딩 빠름
-단점: 서버 비용, 복잡한 캐싱
+- Check out the current project state first (files, docs, recent commits)
+- Ask questions one at a time to refine the idea
+- Prefer multiple choice questions when possible, but open-ended is fine too
+- Only one question per message - if a topic needs more exploration, break it into multiple questions
+- Focus on understanding: purpose, constraints, success criteria
 
-**접근 3: 하이브리드 (권장)**
-장점: 최적의 성능과 유연성
-단점: 설정 복잡도
-```
+**Exploring approaches:**
 
-### 4단계: 디자인 제시 및 검증
+- Propose 2-3 different approaches with trade-offs
+- Present options conversationally with your recommendation and reasoning
+- Lead with your recommended option and explain why
 
-섹션별로 디자인 제시:
+**Presenting the design:**
 
-```markdown
-## 아키텍처
+- Once you believe you understand what you're building, present the design
+- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
+- Ask after each section whether it looks right so far
+- Cover: architecture, components, data flow, error handling, testing
+- Be ready to go back and clarify if something doesn't make sense
 
-[세부사항]
+## After the Design
 
-## 데이터 흐름
+**Documentation:**
 
-[흐름도]
+- Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
+- Use elements-of-style:writing-clearly-and-concisely skill if available
+- Commit the design document to git
 
-## 인터페이스 개요
+**Implementation:**
 
-[UI 스케치]
-```
+- Invoke the writing-plans skill to create a detailed implementation plan
+- Do NOT invoke any other skill. writing-plans is the next step.
 
-각 섹션마다 승인 요청
+## Key Principles
 
-### 5단계: 디자인 문서화
-
-```
-docs/plans/YYYY-MM-DD-<topic>-design.md
-```
-
-승인된 내용을 마크다운 문서로 저장
-
-### 6단계: 구현으로 전환
-
-오직 **writing-plans** skill만 호출
-다른 구현 도구는 이후에 활성화
-
-## 핵심 체크리스트
-
-- [ ] 한 번에 하나의 질문만
-- [ ] 불필요한 기능 제거
-- [ ] 2-3가지 대안 검토
-- [ ] 사용자 승인 확인
-- [ ] 설계 문서화
-- [ ] 디자인 완료 후에만 구현
-
-## 작은 프로젝트도 설계 필요
-
-"너무 간단해서 설계 불필요"라는 생각 금지
-
-**원칙**: 모든 프로젝트, 규모 관계없이 설계 단계 필수
-
-- 간단한 설계도 존재해야 함
-- 단시간에 완료 가능
-
-## 다음 단계
-
-브레인스토밍 완료 후:
-
-- **오직 writing-plans skill만** 호출
-- 설계 기반 계획 수립
-- 이후 executor 등 구현 도구 활성화
+- **One question at a time** - Don't overwhelm with multiple questions
+- **Multiple choice preferred** - Easier to answer than open-ended when possible
+- **YAGNI ruthlessly** - Remove unnecessary features from all designs
+- **Explore alternatives** - Always propose 2-3 approaches before settling
+- **Incremental validation** - Present design, get approval before moving on
+- **Be flexible** - Go back and clarify when something doesn't make sense
