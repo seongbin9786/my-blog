@@ -1,0 +1,20 @@
+commit-msg:
+  jobs:
+    - run: pnpm exec commitlint --edit {1}
+      stage_fixed: true
+
+pre-commit:
+  parallel: true
+  jobs:
+    - run: pnpm exec eslint {staged_files}
+      glob: '*.{js,jsx,ts,tsx}'
+      stage_fixed: true
+    - run: pnpm exec prettier --check {staged_files}
+      glob: '*.{css,json,md}'
+      exclude: 'AGENTS.md'
+      stage_fixed: true
+
+pre-push:
+  jobs:
+    - run: pnpm build
+      stage_fixed: true
