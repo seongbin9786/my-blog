@@ -26,6 +26,7 @@
     "@chromatic-com/storybook": "^5.0.1",
     "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.2",
+    "@commitlint/types": "^20.4.0",
     "@storybook/addon-a11y": "^10.2.10",
     "@storybook/addon-docs": "^10.2.10",
     "@storybook/nextjs-vite": "^10.2.10",
