@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { ThemeToggle } from '../ThemeToggle';
+
 const NAV_LINKS = [
   { href: '/', label: '홈' },
   { href: '/posts', label: '포스트' },
@@ -14,18 +16,21 @@ export const Header = () => {
         <Link href='/' className='font-semibold'>
           My Blog
         </Link>
-        <ul className='flex gap-6'>
-          {NAV_LINKS.map(({ href, label }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                className='text-muted-foreground hover:text-foreground text-sm transition-colors'
-              >
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className='flex items-center gap-6'>
+          <ul className='flex gap-6'>
+            {NAV_LINKS.map(({ href, label }) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className='text-muted-foreground hover:text-foreground text-sm transition-colors'
+                >
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
   );

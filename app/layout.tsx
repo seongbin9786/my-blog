@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 
 import { Header } from '@/components/Header';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -52,10 +53,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='ko' className={pretendard.variable}>
+    <html lang='ko' className={pretendard.variable} suppressHydrationWarning>
       <body className={cn(d2coding.variable, 'antialiased')}>
-        <Header />
-        {children}
+        <ThemeProvider>
+          <Header />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
