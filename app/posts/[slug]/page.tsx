@@ -5,7 +5,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import rehypePrettyCode from 'rehype-pretty-code';
 
+import type { ComponentPropsWithoutRef } from 'react';
+
 import { getAllPosts, getPostBySlug } from '@/lib/posts';
+import { cn } from '@/lib/utils';
 
 type Params = {
   params: Promise<{ slug: string }>;
@@ -38,8 +41,39 @@ export default async function Page({ params }: Params) {
   // NOTE: evaluate는 MDX 문자열을 런타임에 React 컴포넌트로 변환
   const { default: MDXContent } = await evaluate(post.content, {
     ...(runtime as Parameters<typeof evaluate>[1]),
-    rehypePlugins: [[rehypePrettyCode, { theme: 'github-dark' }]],
+    rehypePlugins: [
+      [
+        rehypePrettyCode,
+        { theme: { dark: 'github-dark', light: 'github-light' } },
+      ],
+    ],
   });
+
+  const mdxComponents = {
+    pre: ({ className, ...props }: ComponentPropsWithoutRef<'pre'>) => (
+      <pre
+        className={cn(
+          'overflow-x-auto rounded-lg border border-border p-4',
+          className,
+        )}
+        {...props}
+      />
+    ),
+    // NOTE: data-theme이 있으면 코드 블록 내부 code (rehype-pretty-code), 없으면 인라인 코드
+    code: ({
+      className,
+      'data-theme': dataTheme,
+      ...props
+    }: ComponentPropsWithoutRef<'code'> & { 'data-theme'?: string }) =>
+      dataTheme ? (
+        <code className={className} data-theme={dataTheme} {...props} />
+      ) : (
+        <code
+          className={cn('rounded bg-muted px-1.5 py-0.5 text-[0.875em]', className)}
+          {...props}
+        />
+      ),
+  };
 
   return (
     <main className='mx-auto max-w-3xl px-6 py-16'>
@@ -67,7 +101,7 @@ export default async function Page({ params }: Params) {
           )}
         </header>
         <div className='prose prose-neutral dark:prose-invert max-w-none'>
-          <MDXContent />
+          <MDXContent components={mdxComponents} />
         </div>
       </article>
     </main>
