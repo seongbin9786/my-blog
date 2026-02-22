@@ -6,8 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "concurrently \"eslint --fix .\" \"prettier --write .\"",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -46,6 +46,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/rss": "^0.0.32",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "eslint-config-prettier": "^10.1.8",

@@ -1,1 +1,10 @@
 AGENTS.md
+pnpm-lock.yaml
+
+# ESLint + eslint-plugin-prettier가 처리하는 파일 제외
+*.js
+*.jsx
+*.ts
+*.tsx
+*.mjs
+*.cjs
