@@ -8,6 +8,7 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import type { ComponentPropsWithoutRef } from 'react';
 
 import { getAllPosts, getPostBySlug } from '@/lib/posts';
+import { SITE_NAME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 type Params = {
@@ -27,8 +28,20 @@ export const generateMetadata = async ({
   if (!post) return {};
 
   return {
-    title: `${post.title} | My Blog`,
+    title: post.title,
     description: post.description,
+    openGraph: {
+      type: 'article',
+      siteName: SITE_NAME,
+      title: post.title,
+      description: post.description,
+      url: `/posts/${post.slug}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+    },
   };
 };
 
