@@ -1,3 +1,3 @@
-export const SITE_URL = 'https://my-blog.vercel.app';
-export const SITE_NAME = 'My Blog';
-export const SITE_DESCRIPTION = '개발과 생각을 기록하는 블로그';
+export const SITE_URL = 'https://geeb.dev';
+export const SITE_NAME = 'geeb.dev';
+export const SITE_DESCRIPTION = '5분 안에 핵심만 전달합니다';

@@ -5,7 +5,7 @@ import { getAllPosts } from '@/lib/posts';
 import type { Post } from '@/lib/types';
 
 export const metadata: Metadata = {
-  title: '포스트 | My Blog',
+  title: '포스트',
   description: '모든 포스트 목록',
 };
 

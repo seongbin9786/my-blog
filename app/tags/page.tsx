@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { getAllTags } from '@/lib/posts';
 
 export const metadata: Metadata = {
-  title: '태그 | My Blog',
+  title: '태그',
   description: '모든 태그 목록',
 };
 

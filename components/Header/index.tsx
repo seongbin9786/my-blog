@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { SITE_NAME } from '@/lib/constants';
+
 import { ThemeToggle } from '../ThemeToggle';
 
 const NAV_LINKS = [
@@ -14,7 +16,7 @@ export const Header = () => {
     <header className='border-b'>
       <nav className='mx-auto flex max-w-3xl items-center justify-between px-6 py-4'>
         <Link href='/' className='font-semibold'>
-          My Blog
+          {SITE_NAME}
         </Link>
         <div className='flex items-center gap-6'>
           <ul className='flex gap-6'>

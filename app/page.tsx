@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/constants';
 import { getAllPosts } from '@/lib/posts';
 
 export default function Page() {
@@ -8,8 +9,8 @@ export default function Page() {
   return (
     <main className='mx-auto max-w-3xl px-6 py-16'>
       <section className='mb-12'>
-        <h1 className='text-3xl font-semibold tracking-tight'>My Blog</h1>
-        <p className='text-muted-foreground mt-3'>개발과 생각을 기록합니다.</p>
+        <h1 className='text-3xl font-semibold tracking-tight'>{SITE_NAME}</h1>
+        <p className='text-muted-foreground mt-3'>{SITE_DESCRIPTION}</p>
       </section>
 
       <section>

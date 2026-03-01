@@ -19,7 +19,7 @@ export const generateMetadata = async ({
   const { tag } = await params;
 
   return {
-    title: `#${tag} | My Blog`,
+    title: `#${tag}`,
     description: `${tag} 태그의 포스트 목록`,
   };
 };
