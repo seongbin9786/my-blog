@@ -130,6 +130,12 @@ code[data-theme*=' '] span {
   background-color: var(--shiki-dark-bg);
 }
 
+/* NOTE: typography 플러그인의 inline code 백틱 pseudo-element 제거 */
+.prose code::before,
+.prose code::after {
+  content: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
