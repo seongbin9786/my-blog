@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: '/posts', label: '포스트' },
   { href: '/tags', label: '태그' },
   { href: '/about', label: '소개' },
+  { href: '/privacy', label: '개인정보' },
 ];
 
 export const Header = () => {
