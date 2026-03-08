@@ -1,7 +1,14 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/constants';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants';
 import { getAllPosts } from '@/lib/posts';
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: SITE_URL,
+  },
+};
 
 export default function Page() {
   const posts = getAllPosts().slice(0, 5);

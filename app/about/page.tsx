@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 
-import { SITE_DESCRIPTION } from '@/lib/constants';
+import { SITE_DESCRIPTION, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: '소개',
   description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: `${SITE_URL}/about`,
+  },
 };
 
 export default function Page() {

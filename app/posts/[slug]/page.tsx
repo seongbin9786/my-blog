@@ -8,7 +8,7 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import type { ComponentPropsWithoutRef } from 'react';
 
 import { getAllPosts, getPostBySlug } from '@/lib/posts';
-import { SITE_NAME } from '@/lib/constants';
+import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 type Params = {
@@ -27,20 +27,35 @@ export const generateMetadata = async ({
 
   if (!post) return {};
 
+  const postUrl = `${SITE_URL}/posts/${post.slug}`;
+  const ogImageUrl = `${SITE_URL}/og-default.png`;
+
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      canonical: postUrl,
+    },
     openGraph: {
       type: 'article',
       siteName: SITE_NAME,
       title: post.title,
       description: post.description,
-      url: `/posts/${post.slug}`,
+      url: postUrl,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.description,
+      images: [ogImageUrl],
     },
   };
 };
@@ -50,6 +65,23 @@ export default async function Page({ params }: Params) {
   const post = getPostBySlug(slug);
 
   if (!post) notFound();
+
+  const postUrl = `${SITE_URL}/posts/${post.slug}`;
+  const blogPostingJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    mainEntityOfPage: postUrl,
+    url: postUrl,
+    keywords: post.tags,
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  };
 
   // NOTE: evaluate는 MDX 문자열을 런타임에 React 컴포넌트로 변환
   const { default: MDXContent } = await evaluate(post.content, {
@@ -90,6 +122,10 @@ export default async function Page({ params }: Params) {
 
   return (
     <main className='mx-auto max-w-3xl px-6 py-16'>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingJsonLd) }}
+      />
       <article>
         <header className='mb-10'>
           <h1 className='text-3xl font-semibold tracking-tight'>

@@ -1,12 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { SITE_URL } from '@/lib/constants';
 import { getAllPosts } from '@/lib/posts';
 import type { Post } from '@/lib/types';
 
 export const metadata: Metadata = {
   title: '포스트',
   description: '모든 포스트 목록',
+  alternates: {
+    canonical: `${SITE_URL}/posts`,
+  },
 };
 
 export default function Page() {
